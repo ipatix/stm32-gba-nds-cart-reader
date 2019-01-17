@@ -3,6 +3,8 @@
 #include "usb_device.h"
 #include "gba_cart.h"
 #include "usbd_cdc_if.h"
+#include "host_interface.h"
+#include "usart.h"
 
 void SystemClock_Config(void);
 
@@ -10,8 +12,6 @@ void SystemClock_Config(void);
  * @brief  The application entry point.
  * @retval int
  */
-
-uint16_t gba_buf[512];
 
 int main(void)
 {
@@ -21,6 +21,7 @@ int main(void)
     SystemClock_Config();
     /* Initialize all configured peripherals */
     MX_USB_DEVICE_Init();
+    MX_USART1_UART_Init();
 
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
@@ -35,12 +36,12 @@ int main(void)
 
     HAL_Delay(1000);
 
-    usb_printf("starting loop\n");
+    uart_printf("starting loop\n");
 
     static int count = 0;
 
     while (1) {
-        usb_printf("%d ------------------------\n", count++);
+        //usb_printf("%d ------------------------\n", count++);
         //usb_printf("GPIOA: CRL: %s\n", itox(GPIOA->CRL));
         //usb_printf("GPIOA: CRH: %s\n", itox(GPIOA->CRH));
         //usb_printf("GPIOA: IDR: %s\n", itox(GPIOA->IDR));
@@ -60,26 +61,34 @@ int main(void)
         //usb_printf("GPIOD: CRH: %s\n", itox(GPIOD->CRH));
         //usb_printf("GPIOD: IDR: %s\n", itox(GPIOD->IDR));
         //usb_printf("GPIOD: ODR: %s\n", itox(GPIOD->ODR));
-        for (uint32_t i = 0; i < 512; i++)
-            gba_cart_rom_read(i, &gba_buf[i], 1);
+        //for (uint32_t i = 0; i < 512; i++)
+        //    gba_cart_rom_read(i, &gba_buf[i], 1);
+        //usb_printf("starting benchmark...\n");
+        //uint32_t benchmark_start = HAL_GetTick();
+        //for (uint32_t i = 0; i < 0x800000; i += 512) {
+        //    gba_cart_rom_read(i, gba_buf, 512);
+        //}
+        //uint32_t benchmark_duration = HAL_GetTick() - benchmark_start;
+        //usb_printf("reading 16 MB ROM took %u milliseconds\n", benchmark_duration);
 
         //gba_cart_rom_read(0, gba_buf, 512);
 
-        for (int i = 0; i < 512; i += 8) {
-            usb_printf("%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\n",
-                    itox8((uint8_t)gba_buf[i+0]), itox8((uint8_t)(gba_buf[i+0] >> 8)),
-                    itox8((uint8_t)gba_buf[i+1]), itox8((uint8_t)(gba_buf[i+1] >> 8)),
-                    itox8((uint8_t)gba_buf[i+2]), itox8((uint8_t)(gba_buf[i+2] >> 8)),
-                    itox8((uint8_t)gba_buf[i+3]), itox8((uint8_t)(gba_buf[i+3] >> 8)),
-                    itox8((uint8_t)gba_buf[i+4]), itox8((uint8_t)(gba_buf[i+4] >> 8)),
-                    itox8((uint8_t)gba_buf[i+5]), itox8((uint8_t)(gba_buf[i+5] >> 8)),
-                    itox8((uint8_t)gba_buf[i+6]), itox8((uint8_t)(gba_buf[i+6] >> 8)),
-                    itox8((uint8_t)gba_buf[i+7]), itox8((uint8_t)(gba_buf[i+7] >> 8)));
-        }
+        //for (int i = 0; i < 512; i += 8) {
+        //    usb_printf("%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\n",
+        //            itox8((uint8_t)gba_buf[i+0]), itox8((uint8_t)(gba_buf[i+0] >> 8)),
+        //            itox8((uint8_t)gba_buf[i+1]), itox8((uint8_t)(gba_buf[i+1] >> 8)),
+        //            itox8((uint8_t)gba_buf[i+2]), itox8((uint8_t)(gba_buf[i+2] >> 8)),
+        //            itox8((uint8_t)gba_buf[i+3]), itox8((uint8_t)(gba_buf[i+3] >> 8)),
+        //            itox8((uint8_t)gba_buf[i+4]), itox8((uint8_t)(gba_buf[i+4] >> 8)),
+        //            itox8((uint8_t)gba_buf[i+5]), itox8((uint8_t)(gba_buf[i+5] >> 8)),
+        //            itox8((uint8_t)gba_buf[i+6]), itox8((uint8_t)(gba_buf[i+6] >> 8)),
+        //            itox8((uint8_t)gba_buf[i+7]), itox8((uint8_t)(gba_buf[i+7] >> 8)));
+        //}
 
         //gba_cart_test();
 
-        HAL_Delay(1000);
+        //HAL_Delay(1000);
+        hostif_run();
     }
 }
 
