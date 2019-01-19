@@ -32,6 +32,11 @@
 
 #define HOST_REQ_UART_SYNC 0xA0
 
+#define HOST_REQ_NDS_ROM_SEEK 0xB0
+#define HOST_REQ_NDS_ROM_READ 0xB1
+#define HOST_REQ_NDS_ROM_CHIPID 0xB2
+
+
 //////////////////////////////////////////////
 
 #define DEV_REPL_MAGIC 0xDE44
@@ -59,6 +64,10 @@
 #define DEV_REPL_EEPROM8K_WRITE 0x182
 
 #define DEV_REPL_UART_SYNC 0x1A0
+
+#define DEV_REPL_NDS_ROM_SEEK 0x1B0
+#define DEV_REPL_NDS_ROM_READ 0x1B1
+#define DEV_REPL_NDS_ROM_CHIPID 0x1B2
 
 #define DEV_REPL_ERR 0x1F0
 

@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "gba_cart.h"
+#include "nds_cart.h"
 #include "host_interface.h"
 #include "util.h"
 #include "mini_printf.h"
@@ -28,6 +29,10 @@ struct {
     uint16_t sram_byte_addr;
     uint16_t eeprom_block_addr;
 } gba;
+
+struct {
+    size_t rom_byte_addr;
+} nds;
 
 // private functions
 
@@ -221,6 +226,37 @@ static void hostif_handle_request(struct host_request *const rq, struct device_r
     case HOST_REQ_UART_SYNC:
         rp->type = DEV_REPL_UART_SYNC;
         rp->len = 0;
+        break;
+    case HOST_REQ_NDS_ROM_SEEK:
+        if (rq->len != 4) {
+            hostif_reply_err(rp,
+                    "ERROR: nds rom seek len != 4: %s", itox32(rq->len));
+        } else {
+            nds.rom_byte_addr = (size_t)(rq->data[0] | (rq->data[1] << 8) | (rq->data[2] << 16) | (rq->data[3] << 24));
+            rp->type = DEV_REPL_NDS_ROM_SEEK;
+            rp->len = 0;
+        }
+        break;
+    case HOST_REQ_NDS_ROM_READ:
+        if (rq->len != 2) {
+            hostif_reply_err(rp,
+                    "ERROR: nds rom read len != 2: %s", itox32(rq->len));
+        } else {
+            uint16_t len = (uint16_t)(rq->data[0] | (rq->data[1] << 8));
+            if (len > XFER_MAX_PAYLOAD_SIZE)
+                len = XFER_MAX_PAYLOAD_SIZE;
+            nds_cart_reset();
+            nds_cart_rom_read(nds.rom_byte_addr, rp->data, len);
+            nds.rom_byte_addr += len;
+            rp->type = DEV_REPL_NDS_ROM_READ;
+            rp->len = len;
+        }
+        break;
+    case HOST_REQ_NDS_ROM_CHIPID:
+        nds_cart_reset();
+        nds_cart_rom_chip_id(rp->data);
+        rp->type = DEV_REPL_NDS_ROM_CHIPID;
+        rp->len = 4;
         break;
     default:
         hostif_reply_err(rp,
