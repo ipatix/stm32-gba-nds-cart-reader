@@ -29,7 +29,7 @@ MAIN_OUT_BIN = $(MAIN_OUT).bin
 
 SRC_FILES = $(wildcard src/*.c) $(wildcard lib/src/*.c)
 ASM_FILES = $(wildcard asm/*.s)
-OBJ_FILES = $(SRC_FILES:.c=.o) $(ASM_FILES:.s=.o)
+OBJ_FILES = $(SRC_FILES:.c=.o) $(ASM_FILES:.s=.o) src/nds_cart_key.o
 
 
 # all
@@ -38,6 +38,13 @@ all: $(MAIN_OUT_ELF) $(MAIN_OUT_BIN)
 # main
 $(MAIN_OUT_ELF): $(OBJ_FILES)
 	$(LD) $(LDFLAGS) $^ -o $@
+
+src/nds_cart_key.o: nds_cart_key
+	xxd -i $< | $(CC) $(CFLAGS) -x c -c -o $@ -
+
+nds_cart_key: biosnds7.rom
+	dd if=$< of=$@ iflag=skip_bytes,count_bytes skip=48 count=4168
+
 
 $(MAIN_OUT_BIN): $(MAIN_OUT_ELF)
 	$(OBJCP) $(OBJCPFLAGS) $< $@
