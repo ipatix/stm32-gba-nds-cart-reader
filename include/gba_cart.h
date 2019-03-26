@@ -8,6 +8,9 @@ void gba_cart_init(void);
 
 void gba_cart_test(void);
 
+size_t gba_cart_rom_size();
+size_t gba_cart_save_size();
+
 void gba_cart_rom_read(uint32_t word_addr, uint16_t *data, size_t len);
 uint16_t gba_cart_rom_read_word(uint32_t word_addr);
 void gba_cart_rom_write(uint32_t word_addr, const uint16_t *data, size_t len);

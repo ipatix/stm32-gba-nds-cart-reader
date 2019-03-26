@@ -94,6 +94,28 @@ static void hostif_handle_request(struct host_request *const rq, struct device_r
             rp->len = 0;
         }
         break;
+    case HOST_REQ_ROM_SIZE:
+        {
+            rp->type = DEV_REPL_ROM_SIZE;
+            size_t s = gba_cart_rom_size();
+            rp->data[0] = (uint8_t)s;
+            rp->data[1] = (uint8_t)(s >> 8);
+            rp->data[2] = (uint8_t)(s >> 16);
+            rp->data[3] = (uint8_t)(s >> 24);
+            rp->len = 4;
+        }
+        break;
+    case HOST_REQ_BKP_TYPE:
+        {
+            rp->type = DEV_REPL_BKP_TYPE;
+            size_t s = gba_cart_save_size();
+            rp->data[0] = (uint8_t)s;
+            rp->data[1] = (uint8_t)(s >> 8);
+            rp->data[2] = (uint8_t)(s >> 16);
+            rp->data[3] = (uint8_t)(s >> 24);
+            rp->len = 4;
+        }
+        break;
     case HOST_REQ_SRAM_SEEK:
     case HOST_REQ_FLASH_SEEK:
         if (rq->len != 2) {
@@ -176,6 +198,8 @@ static void hostif_handle_request(struct host_request *const rq, struct device_r
                     "ERROR: gba eeprom address seek: len != 2: %s", itox32(rq->len));
         } else {
             gba.eeprom_block_addr = (uint16_t)(rq->data[0] | (rq->data[1] << 8));
+            gba.eeprom_block_addr >>= 3;
+            gba.eeprom_block_addr &= 0x3FF;
             if (rq->type == HOST_REQ_EEPROM512_SEEK)
                 rp->type = DEV_REPL_EEPROM512_SEEK;
             else

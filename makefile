@@ -1,7 +1,7 @@
 .PHONY: all clean flash
 
 # setup
-COMPILE_OPTS = -mcpu=cortex-m3 -march=armv7-m -mthumb -Wall -Wextra -Wconversion -g -O2
+COMPILE_OPTS = -mcpu=cortex-m3 -march=armv7-m -mthumb -Wall -Wextra -Wconversion -g -O2 -std=c11
 INCLUDE_DIRS = -I include -I lib/inc
 LIBRARY_DIRS = -L lib
 
@@ -39,12 +39,8 @@ all: $(MAIN_OUT_ELF) $(MAIN_OUT_BIN)
 $(MAIN_OUT_ELF): $(OBJ_FILES)
 	$(LD) $(LDFLAGS) $^ -o $@
 
-src/nds_cart_key.o: nds_cart_key
-	xxd -i $< | $(CC) $(CFLAGS) -x c -c -o $@ -
-
-nds_cart_key: biosnds7.rom
-	dd if=$< of=$@ iflag=skip_bytes,count_bytes skip=48 count=4168
-
+src/nds_cart_key.o: biosnds7.rom biosdsi7.rom
+		./gen_keys.sh | $(CC) $(CFLAGS) -x c -c -o $@ -
 
 $(MAIN_OUT_BIN): $(MAIN_OUT_ELF)
 	$(OBJCP) $(OBJCPFLAGS) $< $@

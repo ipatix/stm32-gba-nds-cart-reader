@@ -7,10 +7,14 @@ __attribute__((always_inline)) static inline void NOP(void)
     __asm__("\tnop");
 }
 
-__attribute__((always_inline)) static inline void WAIT(uint32_t x)
+__attribute__((always_inline)) static inline void WAIT(int x)
 {
-    for (uint32_t i = 0; i < x; i++)
-        __asm__("");
+    __asm__ volatile(
+            "delay_loop_%=:\n\t"
+            "subs %[cnt], #1\n\t"
+            "bgt delay_loop_%=\n\t"
+            : [cnt] "+r" (x) :: "cc"
+           );
 }
 
 void usb_send_data(const void *data, uint16_t len);
@@ -23,3 +27,5 @@ void uart_printf(const char *msg, ...);
 
 const char *itox8(uint8_t x);
 const char *itox32(uint32_t x);
+
+#define WALGN __attribute__((aligned(4)))

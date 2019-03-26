@@ -105,6 +105,6 @@ void Error_Handler(void)
  */
 void assert_failed(uint8_t *file, uint32_t line)
 { 
-    usb_printf("ASSERT FAILED in file <%s> line #%lu\n", file, line);
+    uart_printf("ASSERT FAILED in file <%s> line #%lu\n", file, line);
 }
 #endif /* USE_FULL_ASSERT */
