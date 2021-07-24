@@ -1,6 +1,7 @@
 #include <stm32f1xx_hal.h>
 #include <string.h>
 #include <stdbool.h>
+#include <assert.h>
 
 #include "nds_cart.h"
 #include "util.h"
@@ -25,7 +26,9 @@
 #define PIN_EEPROMCS 11u
 #define PIN_EEPROMCS_MSK (1u << PIN_EEPROMCS)
 
-#define NDS_CART_DELAY() do { WAIT(400); } while (0);
+#define NDS_CART_DELAY() do { WAIT(10); } while (0);
+
+#define NDS_CHUNK_SIZE 4096
 
 __attribute__((always_inline)) static inline void clk_low(void)
 {
@@ -93,8 +96,8 @@ __attribute__((always_inline)) static inline void data_output(uint8_t v)
 __attribute__((always_inline)) static inline uint8_t data_in_cycle(void)
 {
     clk_low();
-    clk_high();
     uint8_t ret = data_input();
+    clk_high();
     return ret;
 }
 
@@ -102,7 +105,6 @@ __attribute__((always_inline)) static inline void data_out_cycle(uint8_t d)
 {
     clk_low();
     data_output(d);
-    // TODO, is this right?
     clk_high();
 }
 
@@ -221,62 +223,50 @@ static struct {
     uint32_t kkkkk;
 } key1_state;
 
-void nds_cart_rom_read(size_t byte_addr, uint8_t *data, size_t len)
+static void nds_cart_rom_read_chunk(uint8_t *read_buffer, size_t chunk_addr)
 {
-    byte_addr &= ~0xFFFu;
-    len &= ~0xFFFu;
+    uart_printf("read_chunk=%x\r\n", chunk_addr);
 
-    if (byte_addr == 0x0) {
-        nds_cart_read_header(data, len);
-        data += 0x1000;
-        byte_addr += 0x1000;
-        len -= 0x1000;
+    chunk_addr &= ~0xFFFu;
+
+    if (chunk_addr == 0) {
+        // read header
+        nds_cart_read_header(read_buffer);
+    } else if (chunk_addr < 0x4000) {
+        // read unused area (zeroes)
+        memset(read_buffer, 0, NDS_CHUNK_SIZE);
+    } else if (chunk_addr < 0x8000) {
+        // read secure area
+        uart_printf("Reading from secure area is not yet implemented");
+        memset(read_buffer, 0x5C, NDS_CHUNK_SIZE);
+    } else {
+        // read data
+        uart_printf("Reading from normal regions not yet implemented");
+        memset(read_buffer, 0xBA, NDS_CHUNK_SIZE);
     }
-
-    if (len == 0)
-        return;
-
-    size_t block_len = len;
-    if (byte_addr < 0x4000) {
-        if (byte_addr + block_len > 0x4000) {
-            block_len = 0x4000 - byte_addr;
-        }
-        /* 
-         * area not used, fill with zeroes
-         */
-        memset(data, 0, block_len);
-        data += block_len;
-        byte_addr += block_len;
-        len -= block_len;
-    }
-
-    if (len == 0)
-        return;
-
-    block_len = len;
-    if (byte_addr < 0x8000) {
-        if (byte_addr + block_len > 0x8000) {
-            block_len = 0x8000 - byte_addr;
-        }
-        size_t block_i = (byte_addr - 0x4000) >> 12;
-        byte_addr += block_len;
-        len -= block_len;
-
-        while (block_len > 0) {
-            uart_printf("reading secure area to 0x%s, block %u\n", data, block_i);
-            nds_cart_read_secure_area_chunk(data, block_i++);
-            data += 0x1000;
-            block_len -= 0x1000;
-        }
-    }
-
-    if (len == 0)
-        return;
-
-    // TODO read game cart data
 }
 
-void nds_cart_read_header(uint8_t *data, size_t len)
+void nds_cart_rom_read(size_t byte_addr, uint8_t *data, size_t len)
+{
+    uint8_t read_buffer[NDS_CHUNK_SIZE];
+
+    while (len > 0) {
+        size_t chunk_addr = byte_addr & ~0xFFFu;
+        size_t chunk_index = byte_addr & 0xFFFu;
+
+        size_t read_len = NDS_CHUNK_SIZE - chunk_index;
+        if (read_len > len)
+            read_len = len;
+
+        nds_cart_rom_read_chunk(read_buffer, chunk_addr);
+        memcpy(data, &read_buffer[chunk_index], read_len);
+        byte_addr += read_len;
+        len -= read_len;
+        data += read_len;
+    }
+}
+
+void nds_cart_read_header(uint8_t *data)
 {
     nds_cart_reset();
 
@@ -285,7 +275,7 @@ void nds_cart_read_header(uint8_t *data, size_t len)
         0x00, 0x00, 0x00, 0x00,
     };
 
-    nds_cart_exec_raw_command(cmd, data, len);
+    nds_cart_exec_raw_command(cmd, data, NDS_CHUNK_SIZE);
 }
 
 void nds_cart_rom_chip_id(uint8_t data[4])
@@ -308,8 +298,9 @@ static void init_keycode(uint32_t idcode, uint32_t level, uint32_t modulo, bool 
 
 void nds_cart_read_secure_area_chunk(uint8_t *data, size_t chunk)
 {
-    static struct nds_header hd;
-    nds_cart_read_header((uint8_t *)&hd, sizeof(hd));
+    struct nds_header hd;
+    static_assert(sizeof(hd) == NDS_CHUNK_SIZE);
+    nds_cart_read_header((uint8_t *)&hd);
 
     union {
         uint32_t wid;

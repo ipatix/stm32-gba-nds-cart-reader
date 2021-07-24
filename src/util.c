@@ -18,7 +18,8 @@ void usb_send_data(const void *data, uint16_t len)
         while (hcdc->TxState != 0);
 
         memcpy(UserTxBufferFS, data, block_len);
-        CDC_Transmit_FS(UserTxBufferFS, block_len);
+        int result = CDC_Transmit_FS(UserTxBufferFS, block_len);
+
         data = (char *)data + block_len;
         len = (uint16_t)(len - block_len);
     }
