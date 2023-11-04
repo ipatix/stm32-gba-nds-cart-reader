@@ -28,4 +28,18 @@ void uart_printf(const char *msg, ...);
 const char *itox8(uint8_t x);
 const char *itox32(uint32_t x);
 
+#ifndef NDEBUG
+#define myassert(cond, fmt, ...) \
+    do { \
+        if (!(cond)) { \
+            uart_printf("Assertion Failed in %s:%d function %s\r\n", __FILE__, __LINE__, __func__); \
+            uart_printf((fmt), ## __VA_ARGS__); \
+        } \
+        while (1) { } \
+    } while (0)
+#else
+#define myassert(...) do { } while(0)
+#endif
+
+
 #define WALGN __attribute__((aligned(4)))

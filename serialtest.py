@@ -3,6 +3,23 @@
 import serial
 import sys
 
+def char_conv(x):
+    if x <= 0x20:
+        return '.'
+    if x >= 0x80:
+        return '.'
+    return chr(x)
+
+def print_hex(x):
+    while len(x) > 0:
+        chunk_len = min(16, len(x))
+        chunk_data = x[:chunk_len]
+        chunk_hex = ' '.join(['{0:02x}'.format(v) for v in chunk_data])
+        chunk_hex = chunk_hex.ljust(52)
+        chunk_ascii = ''.join([char_conv(v) for v in chunk_data])
+        print(chunk_hex + chunk_ascii)
+        x = x[chunk_len:]
+
 ser = serial.Serial(port='/dev/ttyACM0', baudrate='115200')
 
 if not ser.isOpen():
@@ -44,7 +61,4 @@ print("reply header:")
 print(reply)
 print("reply data:")
 
-for b in reply_data:
-    print("{0:02x} ".format(b), end='')
-print()
-#print(reply_data)
+print_hex(reply_data)

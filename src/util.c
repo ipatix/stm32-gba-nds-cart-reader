@@ -114,3 +114,11 @@ const char *itox32(uint32_t x)
     str_index = (uint8_t)((str_index + 1) % NUM_ITOX32);
     return str;
 }
+
+void __assert_func(const char *file, int line, const char *func, const char *failedexpr)
+{
+    uart_printf("ASSERTION FAILED:\n  EXPR: %s\n  FILE: %s\n  FUNC: %s\n  LINE: %d", failedexpr, file, func, line);
+    while (1) {
+        __asm__ volatile("nop");
+    }
+}

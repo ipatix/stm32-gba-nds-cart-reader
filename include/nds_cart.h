@@ -4,14 +4,30 @@
 
 void nds_cart_init(void);
 
-void nds_cart_reset(void);
 void nds_cart_rom_chip_id(uint8_t data[4]); // returned bytes; 4
 void nds_cart_rom_read(size_t byte_addr, uint8_t *data, size_t len);
-void nds_cart_read_header(uint8_t *data);
 void nds_cart_read_secure_area_chunk(uint8_t *data, size_t chunk);
 
 extern unsigned char nds_cart_key[];
 extern unsigned char dsi_cart_key[];
+
+struct nds_romctrl {
+    uint32_t key1_gap1_len : 13;
+    uint32_t key2_encypt_data : 1;
+    uint32_t unk_14 : 1;
+    uint32_t key2_apply_seed : 1;
+    uint32_t key1_gap2_len : 6;
+    uint32_t key2_encrypt_cmd : 1;
+    uint32_t _data_status : 1;
+    uint32_t data_blk_size : 3;
+    uint32_t clk_rate : 1;
+    uint32_t key1_clk_gap : 1;
+    uint32_t unk_29 : 1;
+    uint32_t unk_30 : 1;
+    uint32_t _status : 1;
+};
+
+static_assert(sizeof(struct nds_romctrl) == 4, "nds_romctrl must be of size 4");
 
 struct nds_header {
     /* 0x0 */
@@ -24,7 +40,7 @@ struct nds_header {
     /* 0x10 */
     char maker_code[2];
     /* 0x12 */
-    uint8_t uint_code;
+    uint8_t unit_code;
     /* 0x13 */
     uint8_t encryption_seed_select;
     /* 0x14 */
@@ -75,9 +91,9 @@ struct nds_header {
     /* 0x5C */
     uint32_t file_arm7_overlay_size;
     /* 0x60 */
-    uint32_t gamecart_bus_timing_normal;
+    struct nds_romctrl gamecart_bus_timing_normal;
     /* 0x64 */
-    uint32_t gamecart_bus_timing_key1;
+    struct nds_romctrl gamecart_bus_timing_key1;
     /* 0x68 */
     uint32_t icon_title_offset;
     /* 0x6C */
