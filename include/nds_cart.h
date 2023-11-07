@@ -1,33 +1,52 @@
 #pragma once
 
 #include <stdint.h>
+#include <stddef.h>
+#include <assert.h>
 
 void nds_cart_init(void);
 
 void nds_cart_rom_chip_id(uint8_t data[4]); // returned bytes; 4
 void nds_cart_rom_read(size_t byte_addr, uint8_t *data, size_t len);
-void nds_cart_read_secure_area_chunk(uint8_t *data, size_t chunk);
+bool nds_cart_rom_init(void);
 
 extern unsigned char nds_cart_key[];
 extern unsigned char dsi_cart_key[];
 
 struct nds_romctrl {
-    uint32_t key1_gap1_len : 13;
+    uint32_t gap1_len : 13;
     uint32_t key2_encypt_data : 1;
     uint32_t unk_14 : 1;
     uint32_t key2_apply_seed : 1;
-    uint32_t key1_gap2_len : 6;
+    uint32_t gap2_len : 6;
     uint32_t key2_encrypt_cmd : 1;
     uint32_t _data_status : 1;
     uint32_t data_blk_size : 3;
     uint32_t clk_rate : 1;
-    uint32_t key1_clk_gap : 1;
+    uint32_t clk_gap : 1;
     uint32_t unk_29 : 1;
     uint32_t unk_30 : 1;
     uint32_t _status : 1;
 };
 
 static_assert(sizeof(struct nds_romctrl) == 4, "nds_romctrl must be of size 4");
+
+struct nds_chip_id {
+    uint32_t manufacturer : 8;
+    uint32_t chip_size : 8;
+    uint32_t infrared : 1;
+    uint32_t unk_17 : 1;
+    uint32_t unk_18 : 5;
+    uint32_t unk_23 : 1;
+    uint32_t unk_24 : 3;
+    uint32_t nand : 1;
+    uint32_t is_3ds : 1;
+    uint32_t unk_29 : 1;
+    uint32_t dsi : 1;
+    uint32_t cart_protocol : 1;
+};
+
+static_assert(sizeof(struct nds_chip_id) == 4, "nds_chip_id must be of size 4");
 
 struct nds_header {
     /* 0x0 */

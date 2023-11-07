@@ -7,12 +7,12 @@ __attribute__((always_inline)) static inline void NOP(void)
     __asm__("\tnop");
 }
 
-__attribute__((always_inline)) static inline void WAIT(int x)
+__attribute__((always_inline)) static inline void WAIT(size_t x)
 {
     __asm__ volatile(
             "delay_loop_%=:\n\t"
             "subs %[cnt], #1\n\t"
-            "bgt delay_loop_%=\n\t"
+            "bhi delay_loop_%=\n\t"
             : [cnt] "+r" (x) :: "cc"
            );
 }

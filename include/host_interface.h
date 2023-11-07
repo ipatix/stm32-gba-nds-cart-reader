@@ -38,6 +38,7 @@
 #define HOST_REQ_NDS_ROM_SEEK 0xB0
 #define HOST_REQ_NDS_ROM_READ 0xB1
 #define HOST_REQ_NDS_ROM_CHIPID 0xB2
+#define HOST_REQ_NDS_ROM_INIT 0xB3
 
 
 //////////////////////////////////////////////
@@ -74,6 +75,7 @@
 #define DEV_REPL_NDS_ROM_SEEK 0x1B0
 #define DEV_REPL_NDS_ROM_READ 0x1B1
 #define DEV_REPL_NDS_ROM_CHIPID 0x1B2
+#define DEV_REPL_NDS_ROM_INIT 0x1B3
 
 #define DEV_REPL_ERR 0x1F0
 

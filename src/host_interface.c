@@ -280,6 +280,15 @@ static void hostif_handle_request(struct host_request *const rq, struct device_r
         rp->type = DEV_REPL_NDS_ROM_CHIPID;
         rp->len = 4;
         break;
+    case HOST_REQ_NDS_ROM_INIT:
+        if (nds_cart_rom_init()) {
+            rp->type = DEV_REPL_NDS_ROM_INIT;
+            rp->len = 0;
+        } else {
+            hostif_reply_err(rp,
+                    "ERROR: nds rom could not be initialized, see UART for details");
+        }
+        break;
     default:
         hostif_reply_err(rp,
                 "ERROR: invalid request ID: %s", itox32(rq->type));
