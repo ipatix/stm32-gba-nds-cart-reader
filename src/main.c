@@ -38,7 +38,7 @@ int main(void)
 
     HAL_Delay(1000);
 
-    uart_printf("starting loop\n");
+    uart_printf("starting loop\r\n");
 
     while (1) {
         hostif_run();

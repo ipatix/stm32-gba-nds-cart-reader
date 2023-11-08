@@ -10,9 +10,9 @@ __attribute__((always_inline)) static inline void NOP(void)
 __attribute__((always_inline)) static inline void WAIT(size_t x)
 {
     __asm__ volatile(
-            "delay_loop_%=:\n\t"
+            ".Ldelay_loop_%=:\n\t"
             "subs %[cnt], #1\n\t"
-            "bhi delay_loop_%=\n\t"
+            "bhi .Ldelay_loop_%=\n\t"
             : [cnt] "+r" (x) :: "cc"
            );
 }
@@ -28,14 +28,16 @@ void uart_printf(const char *msg, ...);
 const char *itox8(uint8_t x);
 const char *itox32(uint32_t x);
 
+uint64_t bitrev_64(uint64_t x);
+
 #ifndef NDEBUG
 #define myassert(cond, fmt, ...) \
     do { \
         if (!(cond)) { \
             uart_printf("Assertion Failed in %s:%d function %s\r\n", __FILE__, __LINE__, __func__); \
             uart_printf((fmt), ## __VA_ARGS__); \
+            while (1) { __asm__("nop"); } \
         } \
-        while (1) { } \
     } while (0)
 #else
 #define myassert(...) do { } while(0)

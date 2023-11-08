@@ -15,7 +15,7 @@ AS = arm-none-eabi-gcc
 ASFLAGS = $(COMPILE_OPTS) -c
 
 LD = arm-none-eabi-gcc
-LDFLAGS = $(COMPILE_OPTS) -Wl,--gc-sections,-Map=$@.map,-cref $(INCLUDE_DIRS) $(LIBRARY_DIRS) -T STM32F103RCTx_FLASH.ld
+LDFLAGS = $(COMPILE_OPTS) -Wl,--gc-sections,-Map=$@.map,-cref --specs=nano.specs --specs=nosys.specs $(INCLUDE_DIRS) $(LIBRARY_DIRS) -T STM32F103RCTx_FLASH.ld
 
 OBJCP = arm-none-eabi-objcopy
 OBJCPFLAGS = -O binary
@@ -40,7 +40,7 @@ $(MAIN_OUT_ELF): $(OBJ_FILES)
 	$(LD) $(LDFLAGS) $^ -o $@
 
 src/nds_cart_key.o: biosnds7.rom biosdsi7.rom
-		./gen_keys.sh | $(CC) $(CFLAGS) -x c -c -o $@ -
+	./gen_keys.sh | $(CC) $(CFLAGS) -x c -c -o $@ -
 
 $(MAIN_OUT_BIN): $(MAIN_OUT_ELF)
 	$(OBJCP) $(OBJCPFLAGS) $< $@
@@ -49,4 +49,4 @@ clean:
 	rm -f src/*.o lib/src/*.o asm/*.o $(MAIN_OUT_ELF) $(MAIN_OUT_BIN)
 
 flash: $(MAIN_OUT_BIN)
-	stm32flash -w $(MAIN_OUT_BIN) /dev/ttyUSB0
+	stm32flash -v -w $(MAIN_OUT_BIN) /dev/ttyUSB0

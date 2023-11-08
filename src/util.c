@@ -1,9 +1,9 @@
 #include <stdarg.h>
+#include <stdio.h>
 
 #include "usbd_cdc_if.h"
 #include "usart.h"
 #include "util.h"
-#include "mini_printf.h"
 
 void usb_send_data(const void *data, uint16_t len)
 {
@@ -20,8 +20,10 @@ void usb_send_data(const void *data, uint16_t len)
         memcpy(UserTxBufferFS, data, block_len);
         int result = CDC_Transmit_FS(UserTxBufferFS, block_len);
 
-        data = (char *)data + block_len;
+        data = (const char *)data + block_len;
         len = (uint16_t)(len - block_len);
+
+        (void)result;
     }
 }
 
@@ -45,7 +47,7 @@ void usb_printf(const char *msg, ...)
     va_start(args, msg);
 
     char out[256];
-    int len = mini_vsnprintf(out, sizeof(out), msg, args);
+    int len = vsnprintf(out, sizeof(out), msg, args);
     usb_send_data(out, (uint16_t)len);
 
     va_end(args);
@@ -76,7 +78,7 @@ void uart_printf(const char *msg, ...)
     va_start(args, msg);
 
     char out[256];
-    int len = mini_vsnprintf(out, sizeof(out), msg, args);
+    int len = vsnprintf(out, sizeof(out), msg, args);
     uart_send_data(out, (uint16_t)len);
 
     va_end(args);
@@ -113,6 +115,22 @@ const char *itox32(uint32_t x)
     str[8] = '\0';
     str_index = (uint8_t)((str_index + 1) % NUM_ITOX32);
     return str;
+}
+
+uint64_t bitrev_64(uint64_t x)
+{
+    uart_printf("bitrev: x=%llx\r\n", x);
+    uint64_t result = 0;
+    for (size_t i = 0; i < 64; i++) {
+        result <<= 1;
+        result |= x & 1;
+        x >>= 1;
+    }
+    uint32_t sp;
+    __asm__("mov %[sp], sp" : [sp] "=r"  (sp));
+    uart_printf("bitrev: result=%llx\r\n", result);
+    uart_printf("sp=0x%08x\r\n", sp);
+    return result;
 }
 
 void __assert_func(const char *file, int line, const char *func, const char *failedexpr)

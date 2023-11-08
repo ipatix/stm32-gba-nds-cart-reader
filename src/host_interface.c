@@ -1,11 +1,11 @@
 #include <stdarg.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "gba_cart.h"
 #include "nds_cart.h"
 #include "host_interface.h"
 #include "util.h"
-#include "mini_printf.h"
 
 #define REQ_BUF_SIZE (XFER_MAX_PAYLOAD_SIZE + sizeof(struct host_request))
 #define REPL_BUF_SIZE (XFER_MAX_PAYLOAD_SIZE + sizeof(struct device_reply))
@@ -311,7 +311,7 @@ static void hostif_reply_err(struct device_reply *const rp, const char *msg, ...
     va_list args;
     va_start(args, msg);
     rp->type = DEV_REPL_ERR;
-    rp->len = (uint16_t)mini_vsnprintf((char *)rp->data, XFER_MAX_PAYLOAD_SIZE, msg, args);
+    rp->len = (uint16_t)vsnprintf((char *)rp->data, XFER_MAX_PAYLOAD_SIZE, msg, args);
     va_end(args);
 }
 

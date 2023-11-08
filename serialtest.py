@@ -26,57 +26,33 @@ if not ser.isOpen():
     print("failed opening serial device")
     sys.exit(1)
 
+def exec_cmd(cmd, hexdump=False):
+    request = bytearray(cmd)
+
+    # send command
+    ser.write(request)
+    ser.flush()
+
+    # receiver reply header
+    reply = ser.read(8)
+    reply_len = reply[6] | (reply[7] << 8)
+    reply_data = ser.read(reply_len)
+
+    # print reply
+    print("reply header:")
+    print(reply)
+    print("reply data:")
+    if hexdump:
+        print_hex(reply_data)
+    else:
+        print(reply_data)
+
 # NDS init command
-request = bytearray([0x57, 0x80, 0xB3, 0x00, 0x00, 0x00, 0x00, 0x00])
-
-# send command
-ser.write(request)
-ser.flush()
-
-# receiver reply header
-reply = ser.read(8)
-reply_len = reply[6] | (reply[7] << 8)
-reply_data = ser.read(reply_len)
-
-# print reply
-print("reply header:")
-print(reply)
-print("reply data:")
-print(reply_data)
+exec_cmd([0x57, 0x80, 0xB3, 0x00, 0x00, 0x00, 0x00, 0x00])
 
 # NDS seek(0) command
-request = bytearray([0x57, 0x80, 0xB0, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00])
+exec_cmd([0x57, 0x80, 0xB0, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00])
 
-# send command
-ser.write(request)
-ser.flush()
-
-# receiver reply header
-reply = ser.read(8)
-reply_len = reply[6] | (reply[7] << 8)
-reply_data = ser.read(reply_len)
-
-# print reply
-print("reply header:")
-print(reply)
-print("reply data:")
-print(reply_data)
-
-# NDS read(4096) commad
-request = bytearray([0x57, 0x80, 0xB1, 0x00, 0x01, 0x00, 0x02, 0x00, 0x00, 0x02])
-
-# send command
-ser.write(request)
-ser.flush()
-
-# receiver reply header
-reply = ser.read(8)
-reply_len = reply[6] | (reply[7] << 8)
-reply_data = ser.read(reply_len)
-
-# print reply
-print("reply header:")
-print(reply)
-print("reply data:")
-
-print_hex(reply_data)
+for i in range(16):
+    # NDS read(4096) commad
+    exec_cmd([0x57, 0x80, 0xB1, 0x00, 0x01, 0x00, 0x02, 0x00, 0x00, 0x10], hexdump=True)
