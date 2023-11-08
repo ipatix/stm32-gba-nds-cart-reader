@@ -119,17 +119,12 @@ const char *itox32(uint32_t x)
 
 uint64_t bitrev_64(uint64_t x)
 {
-    uart_printf("bitrev: x=%llx\r\n", x);
     uint64_t result = 0;
     for (size_t i = 0; i < 64; i++) {
         result <<= 1;
         result |= x & 1;
         x >>= 1;
     }
-    uint32_t sp;
-    __asm__("mov %[sp], sp" : [sp] "=r"  (sp));
-    uart_printf("bitrev: result=%llx\r\n", result);
-    uart_printf("sp=0x%08x\r\n", sp);
     return result;
 }
 
