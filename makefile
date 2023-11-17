@@ -49,4 +49,4 @@ clean:
 	rm -f src/*.o lib/src/*.o asm/*.o $(MAIN_OUT_ELF) $(MAIN_OUT_BIN)
 
 flash: $(MAIN_OUT_BIN)
-	stm32flash -v -w $(MAIN_OUT_BIN) /dev/ttyUSB0
+	stm32flash -b 115200 -w $(MAIN_OUT_BIN) /dev/ttyUSB0
