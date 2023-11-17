@@ -15,7 +15,7 @@ AS = arm-none-eabi-gcc
 ASFLAGS = $(COMPILE_OPTS) -c
 
 LD = arm-none-eabi-gcc
-LDFLAGS = $(COMPILE_OPTS) -Wl,--gc-sections,-Map=$@.map,-cref --specs=nano.specs --specs=nosys.specs $(INCLUDE_DIRS) $(LIBRARY_DIRS) -T STM32F103RCTx_FLASH.ld
+LDFLAGS = $(COMPILE_OPTS) -Wl,--gc-sections,-Map=$@.map,-cref --specs=nosys.specs $(INCLUDE_DIRS) $(LIBRARY_DIRS) -T STM32F103RCTx_FLASH.ld
 
 OBJCP = arm-none-eabi-objcopy
 OBJCPFLAGS = -O binary
