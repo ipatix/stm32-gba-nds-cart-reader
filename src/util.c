@@ -38,7 +38,7 @@ void usb_print_bytes(const void *data, uint16_t len)
         strcat(out, itox8((uint8_t)*input++));
         strcat(out, ",");
     }
-    usb_printf("%s\n", out);
+    usb_printf("%s\r\n", out);
 }
 
 void usb_printf(const char *msg, ...)
@@ -69,7 +69,7 @@ void uart_print_bytes(const void *data, uint16_t len)
         strcat(out, itox8((uint8_t)*input++));
         strcat(out, ",");
     }
-    uart_printf("%s\n", out);
+    uart_printf("%s\r\n", out);
 }
 
 void uart_printf(const char *msg, ...)

@@ -30,6 +30,8 @@ const char *itox32(uint32_t x);
 
 uint64_t bitrev_64(uint64_t x);
 
+#define ceil_div(num, den) (((num) + (den) - 1) / (den))
+
 #ifndef NDEBUG
 #define myassert(cond, fmt, ...) \
     do { \

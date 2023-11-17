@@ -276,7 +276,7 @@ static void hostif_handle_request(struct host_request *const rq, struct device_r
         }
         break;
     case HOST_REQ_NDS_ROM_CHIPID:
-        nds_cart_rom_chip_id(rp->data);
+        nds_cart_cmd_chip_id(rp->data);
         rp->type = DEV_REPL_NDS_ROM_CHIPID;
         rp->len = 4;
         break;

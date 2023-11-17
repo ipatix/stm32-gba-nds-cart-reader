@@ -6,7 +6,7 @@
 
 void nds_cart_init(void);
 
-void nds_cart_rom_chip_id(uint8_t data[4]); // returned bytes; 4
+void nds_cart_cmd_chip_id(uint8_t data[4]); // returned bytes; 4
 void nds_cart_rom_read(size_t byte_addr, uint8_t *data, size_t len);
 bool nds_cart_rom_init(void);
 
