@@ -289,7 +289,7 @@ static void nds_cart_begin_key1(void)
         uart_printf("chip_id with key1 cmd doesn't match initial chip_id:\r\n");
         print_chip_id(&chip_id);
     } else {
-        uart_printf("key1 chip_id is correct!\r\n");
+        //uart_printf("key1 chip_id is correct!\r\n");
     }
 }
 
@@ -301,6 +301,17 @@ static void nds_cart_begin_key2(void)
     nds_cart_cmd_enable_data_mode();
 
     nds_cart_state.state = NDS_CART_KEY2;
+
+    // check chip_id
+    struct nds_chip_id chip_id;
+    nds_cart_cmd_chip_id_key2(&chip_id);
+
+    if (memcmp(&chip_id, &nds_cart_state.chip_id, sizeof(chip_id))) {
+        uart_printf("chip_id with key2 cmd doesn't match initial chip_id:\r\n");
+        print_chip_id(&chip_id);
+    } else {
+        //uart_printf("key1 chip_id is correct!\r\n");
+    }
 }
 
 void nds_cart_init(void)
@@ -352,7 +363,7 @@ static void nds_cart_exec_command(uint64_t org_cmd, uint8_t *data, size_t len)
     bool key2_result;
     size_t gap1;
     size_t gap2;
-    const char *cmd_key = "RAW";
+    //const char *cmd_key = "RAW";
     uint64_t cmd;
 
     if (nds_cart_state.state == NDS_CART_KEY1) {
@@ -363,7 +374,7 @@ static void nds_cart_exec_command(uint64_t org_cmd, uint8_t *data, size_t len)
 
         cmd = key1_encrypt_cmd(org_cmd);
         key2_result = true;
-        cmd_key = "KEY1";
+        //cmd_key = "KEY1";
     } else {
         clk_rate = nds_cart_state.normal_clk_rate;
         gap_clk = nds_cart_state.normal_gap_clk;
@@ -372,7 +383,7 @@ static void nds_cart_exec_command(uint64_t org_cmd, uint8_t *data, size_t len)
 
         if (nds_cart_state.state == NDS_CART_KEY2) {
             cmd = key2_encrypt_cmd(org_cmd);
-            cmd_key = "KEY2";
+            //cmd_key = "KEY2";
             key2_result = true;
         } else {
             cmd = org_cmd;
@@ -556,7 +567,7 @@ bool nds_cart_rom_init(void)
     nds_cart_state.chip_id = chip_id;
     nds_cart_state.protocol_rev = chip_id.cart_protocol;
     //uart_printf("protocol_rev: %d\r\n", nds_cart_state.protocol_rev);
-    print_chip_id(&chip_id);
+    //print_chip_id(&chip_id);
     nds_cart_state.normal_gap_clk = header.gamecart_bus_timing_normal.clk_gap;
     nds_cart_state.normal_clk_rate = header.gamecart_bus_timing_normal.clk_rate;
     nds_cart_state.normal_gap1 = header.gamecart_bus_timing_normal.gap1_len;
@@ -833,7 +844,8 @@ static void nds_cart_read_secure_area_page(uint8_t *data, size_t page)
     if (page == 4) {
         key1_decrypt_64bit(&secure_area_page._u32[0]);
         key1_init_keycode(nds_cart_state.game_code, 3, 8, false);
-        for (size_t i = 0; i < NDS_PAGE_SIZE / 4; i += 2)
+        const size_t SEC_AREA_KEY1_CRYPT_LEN = 0x800;
+        for (size_t i = 0; i < SEC_AREA_KEY1_CRYPT_LEN / sizeof(uint32_t); i += 2)
             key1_decrypt_64bit(&secure_area_page._u32[i]);
 
         if (memcmp(secure_area_page._u8, "encryObj", 8)) {
